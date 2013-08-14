@@ -1,0 +1,58 @@
+from datetime import datetime
+import re
+import numpy as np
+from collections import defaultdict
+import pandas as pd
+
+def loadCapital(filelist):
+    """Loads Data from CapitalBikes, output DataFrame"""
+
+    data = {}
+    
+    for filename in filelist:
+        f = open(filename)
+        f.next()
+    
+        for line in f:
+            sptline = line.split(',')
+
+            try:
+                out_station = re.search('\((.....)\)',sptline[3]).group(1)
+            except AttributeError:
+                out_station = ''
+            try:
+                in_station = re.search('\((.....)\)',sptline[4]).group(1)
+            except AttributeError:
+                in_station = ''
+
+            out_time = datetime.strptime(sptline[1],'%m/%d/%Y %H:%M').replace(minute=0)
+            in_time = datetime.strptime(sptline[1],'%m/%d/%Y %H:%M').replace(minute=0)
+
+            if out_station != '':
+                if out_station in data.keys():
+                    data[out_station][out_time] -= 1
+                else:
+                    data[out_station] = defaultdict(int)
+                    data[out_station][out_time] = -1
+            if in_station != '':
+                if in_station in data.keys():
+                    data[in_station][in_time] += 1
+                else:
+                    data[in_station] = defaultdict(int)
+                    data[in_station][in_time] = 1
+
+    newdata = {}
+    for station in data.keys():
+        newdata[station] = pd.Series(data[station])
+
+    df = pd.DataFrame(newdata)
+
+# Insert a column for each 'weekhour' which is Boolean...
+    df['weekhour'] = df.index.hour + df.index.weekday*24
+    for item in set(df['weekhour']):
+        df[str(item)] = df['weekhour'] == item
+
+# This will be one of the features
+# I could also add a column for each month...2
+
+    return df

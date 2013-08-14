@@ -1,0 +1,23 @@
+import xml.etree.ElementTree as ET
+
+def loadStationPositions(inputfile):
+    tree = ET.parse(inputfile)
+    root = tree.getroot()
+    
+    station_meta = {}
+    
+    for child in root:
+        for subchild in child:
+            if subchild.tag == 'terminalName':
+                termName = subchild.text
+            if subchild.tag == 'lat':
+                termLat = subchild.text
+            if subchild.tag == 'long':
+                termLong = subchild.text
+            if subchild.tag == 'name':
+                termString = subchild.text
+        station_meta[termName] = {'lat':termLat,
+                                  'long':termLong,
+                                  'termString':termString}
+
+    return station_meta
