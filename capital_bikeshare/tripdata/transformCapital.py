@@ -60,21 +60,20 @@ def loadCapital(filelist):
                     data[in_station] = defaultdict(int)
                     data[in_station][in_time] = 1
         f.close()
+
     newdata = {}
+
     for station in data.keys():
         newdata[station] = pd.Series(data[station])
-
-    for station in newdata.keys():
-        if station[6:] == 'in':
-            newdata[station[0:5]+'_net'] = newdata[station] - newdata[station[0:5]+'_out']
 
     df = pd.DataFrame(newdata)
 
 # Insert a column for each 'weekhour' which is Boolean...
     df['weekhour'] = df.index.hour + df.index.weekday*24
-    for item in set(df['weekhour']):
-        for month in range(12):
-            df['w'+str(item)+'m'+str(month)] = np.logical_and(df['weekhour'] == item,df.index.month == month)
+
+#    for item in set(df['weekhour']):
+#        for month in range(12):
+#            df['w'+str(item)+'m'+str(month)] = np.logical_and(df['weekhour'] == item,df.index.month == month)
 
 # This will be one of the features
 # I could also add a column for each month...2
